@@ -49,7 +49,11 @@ function reload(count) {
     newWorker.removeListener('error', reset);
 
     if (firstWorker) {
+      // console.log('firstWorker %s %s', firstWorker.id, firstWorker.state);
       firstWorker.kill('SIGQUIT');
+      setTimeout(function () {
+        firstWorker.process.kill('SIGQUIT');
+      }, 100);
     }
     reloading = false;
     if (reloadPedding) {
@@ -66,6 +70,7 @@ function reload(count) {
   // kill other workers
   for (var i = 1; i < aliveWorkers.length; i++) {
     worker = aliveWorkers[i];
+    // console.log('worker %s %s', worker.id, worker.state);
     worker.kill('SIGQUIT');
   }
 
