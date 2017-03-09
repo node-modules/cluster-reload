@@ -1,6 +1,4 @@
-/**!
- * cluster-reload - index.js
- *
+/**
  * Copyright(c) node-modules and other contributors.
  * MIT Licensed
  *
@@ -18,6 +16,8 @@ var cluster = require('cluster');
 
 module.exports = reload;
 
+// Windows not support SIGQUIT https://nodejs.org/api/process.html#process_signal_events
+var KILL_SIGNAL = 'SIGTERM';
 var reloading = false;
 var reloadPedding = false;
 function reload(count) {
@@ -50,9 +50,9 @@ function reload(count) {
 
     if (firstWorker) {
       // console.log('firstWorker %s %s', firstWorker.id, firstWorker.state);
-      firstWorker.kill('SIGQUIT');
+      firstWorker.kill(KILL_SIGNAL);
       setTimeout(function () {
-        firstWorker.process.kill('SIGQUIT');
+        firstWorker.process.kill(KILL_SIGNAL);
       }, 100);
     }
     reloading = false;
@@ -71,7 +71,7 @@ function reload(count) {
   for (var i = 1; i < aliveWorkers.length; i++) {
     worker = aliveWorkers[i];
     // console.log('worker %s %s', worker.id, worker.state);
-    worker.kill('SIGQUIT');
+    worker.kill(KILL_SIGNAL);
   }
 
   // keep workers number as before
