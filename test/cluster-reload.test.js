@@ -1,36 +1,22 @@
-/**!
- * cluster-reload - test/cluster-reload.test.js
- *
- * Copyright(c) node-modules and other contributors.
- * MIT Licensed
- *
- * Authors:
- *   fengmk2 <m@fengmk2.com> (http://fengmk2.com)
- */
+'use strict';
 
-"use strict";
+const assert = require('assert');
+const numCPUs = require('os').cpus().length;
+const urllib = require('urllib');
+const reload = require('../');
 
-/**
- * Module dependencies.
- */
-
-var assert = require('assert');
-var numCPUs = require('os').cpus().length;
-var urllib = require('urllib');
-var reload = require('../');
-
-describe('cluster-reload.test.js', function () {
-  before(function (done) {
+describe('cluster-reload.test.js', function() {
+  before(function(done) {
     require('./master');
     setTimeout(done, 500);
   });
 
-  after(function (done) {
+  after(function(done) {
     setTimeout(done, 2000);
   });
 
-  it('should got 200', function (done) {
-    urllib.request('http://localhost:7001', function (err, data, res) {
+  it('should got 200', function(done) {
+    urllib.request('http://localhost:7001', function(err, data, res) {
       assert(!err);
       assert.equal(data.toString(), 'hello world\n');
       assert.equal(res.statusCode, 200);
@@ -38,9 +24,9 @@ describe('cluster-reload.test.js', function () {
     });
   });
 
-  it('should work with reloading', function (done) {
+  it('should work with reloading', function(done) {
     reload();
-    urllib.request('http://localhost:7001', function (err, data, res) {
+    urllib.request('http://localhost:7001', function(err, data, res) {
       assert(!err);
       assert.equal(data.toString(), 'hello world\n');
       assert.equal(res.statusCode, 200);
@@ -48,10 +34,10 @@ describe('cluster-reload.test.js', function () {
     });
   });
 
-  it('should work with reload again', function (done) {
+  it('should work with reload again', function(done) {
     reload(numCPUs);
     reload(numCPUs);
-    urllib.request('http://localhost:7001', function (err, data, res) {
+    urllib.request('http://localhost:7001', function(err, data, res) {
       assert(!err);
       assert.equal(data.toString(), 'hello world\n');
       assert.equal(res.statusCode, 200);
@@ -59,9 +45,9 @@ describe('cluster-reload.test.js', function () {
     });
   });
 
-  it('should reload 1 workers still work', function (done) {
+  it('should reload 1 workers still work', function(done) {
     reload(1);
-    urllib.request('http://localhost:7001', function (err, data, res) {
+    urllib.request('http://localhost:7001', function(err, data, res) {
       assert(!err);
       assert.equal(data.toString(), 'hello world\n');
       assert.equal(res.statusCode, 200);
@@ -69,15 +55,15 @@ describe('cluster-reload.test.js', function () {
     });
   });
 
-  it('should exit and reload work', function (done) {
-    urllib.request('http://localhost:7001/exit', function (err) {
+  it('should exit and reload work', function(done) {
+    urllib.request('http://localhost:7001/exit', function(err) {
       assert(err);
       reload(1);
       reload(1);
       reload(1);
       reload(1);
-      setTimeout(function () {
-        urllib.request('http://localhost:7001', function (err, data, res) {
+      setTimeout(function() {
+        urllib.request('http://localhost:7001', function(err, data, res) {
           assert(!err);
           assert.equal(data.toString(), 'hello world\n');
           assert.equal(res.statusCode, 200);
