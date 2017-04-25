@@ -1,19 +1,18 @@
 'use strict';
 
+const reload = require('..');
 const assert = require('assert');
-const numCPUs = require('os').cpus().length;
 const urllib = require('urllib');
-const reload = require('../');
 
-describe('cluster-reload.test.js', () => {
+const numCPUs = require('os').cpus().length;
+
+describe('test/cluster-reload.test.js', () => {
   before(done => {
     require('./master');
     setTimeout(done, 500);
   });
 
-  after(done => {
-    setTimeout(done, 2000);
-  });
+  after(done => setTimeout(done, 2000));
 
   it('should got 200', done => {
     urllib.request('http://localhost:7001', (err, data, res) => {

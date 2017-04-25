@@ -9,11 +9,13 @@ const KILL_SIGNAL = 'SIGTERM';
 let reloading = false;
 let reloadPedding = false;
 
-function reload(count = require('os').cpus().length) {
+function reload(count = require('os').cpus().length, options = {}) {
   if (reloading) {
     reloadPedding = true;
     return;
   }
+
+  const kill = options.kill || defaultKill;
 
   reloading = true;
   const aliveWorkers = getAliveWorkers();
@@ -24,7 +26,7 @@ function reload(count = require('os').cpus().length) {
   function reset() {
     // don't leak
     newWorker.removeListener('listening', reset);
-    newWorker.removeListener('error', reset);
+    newWorker.removeListener('exit', reset);
 
     if (firstWorker) kill(firstWorker);
 
@@ -32,7 +34,7 @@ function reload(count = require('os').cpus().length) {
     if (reloadPedding) {
       // pedding reload jobs exist, reload again
       reloadPedding = false;
-      reload(count);
+      reload(count, options);
     }
   }
 
@@ -44,7 +46,7 @@ function reload(count = require('os').cpus().length) {
 
   // 3. kill all other old workers
   for (const worker of aliveWorkers.slice(1)) {
-    worker.kill(KILL_SIGNAL);
+    kill(worker);
   }
 
   // 4. for more workers, keep workers number as before
@@ -66,9 +68,6 @@ function getAliveWorkers() {
   return aliveWorkers;
 }
 
-function kill(worker) {
-  worker.kill(KILL_SIGNAL);
-  setTimeout(() => {
-    worker.process.kill(KILL_SIGNAL);
-  }, 100);
+function defaultKill(worker) {
+  worker.process.kill(KILL_SIGNAL); // 直接 kill 无法监听
 }
