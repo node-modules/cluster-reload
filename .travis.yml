@@ -1,10 +1,6 @@
 sudo: false
 language: node_js
 node_js:
-  - '0.12'
-  - 'iojs-2'
-  - 'iojs-1'
-  - '4'
   - '6'
   - '7'
 install:

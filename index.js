@@ -1,82 +1,73 @@
-/**
- * Copyright(c) node-modules and other contributors.
- * MIT Licensed
- *
- * Authors:
- *   fengmk2 <m@fengmk2.com> (http://fengmk2.com)
- */
+'use strict';
 
-"use strict";
-
-/**
- * Module dependencies.
- */
-
-var cluster = require('cluster');
+const cluster = require('cluster');
 
 module.exports = reload;
 
 // Windows not support SIGQUIT https://nodejs.org/api/process.html#process_signal_events
-var KILL_SIGNAL = 'SIGTERM';
-var reloading = false;
-var reloadPedding = false;
-function reload(count) {
+const KILL_SIGNAL = 'SIGTERM';
+let reloading = false;
+let reloadPedding = false;
+
+function reload(count = require('os').cpus().length, options = {}) {
   if (reloading) {
     reloadPedding = true;
     return;
   }
-  if (!count) {
-    count = require('os').cpus().length;
-  }
-  reloading = true;
-  // find out all alive workers
-  var aliveWorkers = [];
-  var worker;
-  for (var id in cluster.workers) {
-    worker = cluster.workers[id];
-    if (worker.state === 'disconnected') {
-      continue;
-    }
-    aliveWorkers.push(worker);
-  }
 
-  var firstWorker;
-  var newWorker;
+  const kill = options.kill || defaultKill;
+
+  reloading = true;
+  const aliveWorkers = getAliveWorkers();
+
+  let newWorker;
+  const firstWorker = aliveWorkers[0];
 
   function reset() {
     // don't leak
     newWorker.removeListener('listening', reset);
-    newWorker.removeListener('error', reset);
+    newWorker.removeListener('exit', reset);
 
-    if (firstWorker) {
-      // console.log('firstWorker %s %s', firstWorker.id, firstWorker.state);
-      firstWorker.kill(KILL_SIGNAL);
-      setTimeout(function () {
-        firstWorker.process.kill(KILL_SIGNAL);
-      }, 100);
-    }
+    if (firstWorker) kill(firstWorker);
+
     reloading = false;
     if (reloadPedding) {
-      // has reload jobs, reload again
+      // pedding reload jobs exist, reload again
       reloadPedding = false;
-      reload(count);
+      reload(count, options);
     }
   }
 
-  firstWorker = aliveWorkers[0];
-  newWorker = cluster.fork();
-  newWorker.on('listening', reset).on('exit', reset);
+  // 1. fork one worker
+  // 2. close first old worker after 1st worker started
+  newWorker = cluster.fork()
+    .on('listening', reset)
+    .on('exit', reset);
 
-  // kill other workers
-  for (var i = 1; i < aliveWorkers.length; i++) {
-    worker = aliveWorkers[i];
-    // console.log('worker %s %s', worker.id, worker.state);
-    worker.kill(KILL_SIGNAL);
+  // 3. kill all other old workers
+  for (const worker of aliveWorkers.slice(1)) {
+    kill(worker);
   }
 
-  // keep workers number as before
-  var left = count - 1;
-  for (var j = 0; j < left; j++) {
+  // 4. for more workers, keep workers number as before
+  const left = count - 1;
+  for (let j = 0; j < left; j++) {
     cluster.fork();
   }
+}
+
+// find out all alive workers
+function getAliveWorkers() {
+  const aliveWorkers = [];
+  for (const id in cluster.workers) {
+    const worker = cluster.workers[id];
+    if (worker.state === 'disconnected') continue;
+    aliveWorkers.push(worker);
+  }
+
+  return aliveWorkers;
+}
+
+function defaultKill(worker) {
+  worker.process.kill(KILL_SIGNAL); // 直接 kill 无法监听
 }
