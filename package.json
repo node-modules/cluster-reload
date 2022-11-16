@@ -8,12 +8,11 @@
   ],
   "scripts": {
     "test": "egg-bin test",
-    "ci": "gg-bin cov"
+    "ci": "egg-bin cov"
   },
   "dependencies": {},
   "devDependencies": {
     "egg-bin": "^4.20.0",
-    "egg-ci": "^2.2.0",
     "urllib": "^2.40.0"
   },
   "homepage": "https://github.com/node-modules/cluster-reload",
