@@ -1,89 +1,69 @@
-/**!
- * cluster-reload - test/cluster-reload.test.js
- *
- * Copyright(c) node-modules and other contributors.
- * MIT Licensed
- *
- * Authors:
- *   fengmk2 <m@fengmk2.com> (http://fengmk2.com)
- */
+const assert = require('assert');
+const numCPUs = require('os').cpus().length;
+const urllib = require('urllib');
+const reload = require('..');
 
-"use strict";
+function sleep(ms) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
+}
 
-/**
- * Module dependencies.
- */
-
-var assert = require('assert');
-var numCPUs = require('os').cpus().length;
-var urllib = require('urllib');
-var reload = require('../');
-
-describe('cluster-reload.test.js', function () {
-  before(function (done) {
+describe('cluster-reload.test.js', () => {
+  before(async () => {
     require('./master');
-    setTimeout(done, 500);
+    await sleep(500);
   });
 
-  after(function (done) {
-    setTimeout(done, 2000);
+  after(async () => {
+    await sleep(2000);
   });
 
-  it('should got 200', function (done) {
-    urllib.request('http://localhost:7001', function (err, data, res) {
-      assert(!err);
-      assert.equal(data.toString(), 'hello world\n');
-      assert.equal(res.statusCode, 200);
-      done();
-    });
+  it('should got 200', async () => {
+    const { data, status } = await urllib.request('http://localhost:7001');
+    assert.equal(data.toString(), 'hello world\n');
+    assert.equal(status, 200);
   });
 
-  it('should work with reloading', function (done) {
+  it('should work with reloading', async () => {
     reload();
-    urllib.request('http://localhost:7001', function (err, data, res) {
-      assert(!err);
-      assert.equal(data.toString(), 'hello world\n');
-      assert.equal(res.statusCode, 200);
-      done();
-    });
+    const { data, status } = await urllib.request('http://localhost:7001');
+    assert.equal(data.toString(), 'hello world\n');
+    assert.equal(status, 200);
   });
 
-  it('should work with reload again', function (done) {
+  it('should work with reload again', async () => {
     reload(numCPUs);
     reload(numCPUs);
-    urllib.request('http://localhost:7001', function (err, data, res) {
-      assert(!err);
-      assert.equal(data.toString(), 'hello world\n');
-      assert.equal(res.statusCode, 200);
-      setTimeout(done, 2000);
-    });
+    const { data, status } = await urllib.request('http://localhost:7001');
+    assert.equal(data.toString(), 'hello world\n');
+    assert.equal(status, 200);
+    await sleep(2000);
   });
 
-  it('should reload 1 workers still work', function (done) {
+  it('should reload 1 workers still work', async () => {
     reload(1);
-    urllib.request('http://localhost:7001', function (err, data, res) {
-      assert(!err);
-      assert.equal(data.toString(), 'hello world\n');
-      assert.equal(res.statusCode, 200);
-      setTimeout(done, 2000);
-    });
+    const { data, status } = await urllib.request('http://localhost:7001');
+    assert.equal(data.toString(), 'hello world\n');
+    assert.equal(status, 200);
   });
 
-  it('should exit and reload work', function (done) {
-    urllib.request('http://localhost:7001/exit', function (err) {
+  it('should exit and reload work', async () => {
+    await assert.rejects(async () => {
+      await urllib.request('http://localhost:7001/exit');
+    }, err => {
       assert(err);
-      reload(1);
-      reload(1);
-      reload(1);
-      reload(1);
-      setTimeout(function () {
-        urllib.request('http://localhost:7001', function (err, data, res) {
-          assert(!err);
-          assert.equal(data.toString(), 'hello world\n');
-          assert.equal(res.statusCode, 200);
-          done();
-        });
-      }, 1000);
+      return true;
     });
+
+    reload(1);
+    reload(1);
+    reload(1);
+    reload(1);
+    await sleep(1000);
+
+    const { data, status } = await urllib.request('http://localhost:7001');
+    assert.equal(data.toString(), 'hello world\n');
+    assert.equal(status, 200);
   });
 });
