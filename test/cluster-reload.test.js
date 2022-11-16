@@ -86,4 +86,19 @@ describe('cluster-reload.test.js', function () {
       }, 1000);
     });
   });
+
+  it('should call reload method by worker process and no error', function (done) {
+    urllib.request('http://localhost:7001/reload', function (err, data, res) {
+      assert(!err);
+      assert.equal(data.toString(), 'hello world\n');
+      assert.equal(res.statusCode, 200);
+      
+      urllib.request('http://localhost:7001', function (err, data, res) {
+        assert(!err);
+        assert.equal(data.toString(), 'hello world\n');
+        assert.equal(res.statusCode, 200);
+        done();
+      });
+    });
+  });
 });
