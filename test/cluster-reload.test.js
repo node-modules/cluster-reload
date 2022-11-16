@@ -20,14 +20,14 @@ describe('cluster-reload.test.js', () => {
   });
 
   it('should got 200', async () => {
-    const { data, status } = await urllib.request('http://localhost:7001');
+    const { data, status } = await urllib.request('http://127.0.0.1:7001');
     assert.equal(data.toString(), 'hello world\n');
     assert.equal(status, 200);
   });
 
   it('should work with reloading', async () => {
     reload();
-    const { data, status } = await urllib.request('http://localhost:7001');
+    const { data, status } = await urllib.request('http://127.0.0.1:7001');
     assert.equal(data.toString(), 'hello world\n');
     assert.equal(status, 200);
   });
@@ -35,7 +35,7 @@ describe('cluster-reload.test.js', () => {
   it('should work with reload again', async () => {
     reload(numCPUs);
     reload(numCPUs);
-    const { data, status } = await urllib.request('http://localhost:7001');
+    const { data, status } = await urllib.request('http://127.0.0.1:7001');
     assert.equal(data.toString(), 'hello world\n');
     assert.equal(status, 200);
     await sleep(2000);
@@ -43,14 +43,14 @@ describe('cluster-reload.test.js', () => {
 
   it('should reload 1 workers still work', async () => {
     reload(1);
-    const { data, status } = await urllib.request('http://localhost:7001');
+    const { data, status } = await urllib.request('http://127.0.0.1:7001');
     assert.equal(data.toString(), 'hello world\n');
     assert.equal(status, 200);
   });
 
   it('should exit and reload work', async () => {
     await assert.rejects(async () => {
-      await urllib.request('http://localhost:7001/exit');
+      await urllib.request('http://127.0.0.1:7001/exit');
     }, err => {
       assert(err);
       return true;
@@ -62,7 +62,7 @@ describe('cluster-reload.test.js', () => {
     reload(1);
     await sleep(1000);
 
-    const { data, status } = await urllib.request('http://localhost:7001');
+    const { data, status } = await urllib.request('http://127.0.0.1:7001');
     assert.equal(data.toString(), 'hello world\n');
     assert.equal(status, 200);
   });
