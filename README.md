@@ -3,6 +3,7 @@ cluster-reload
 
 [![NPM version][npm-image]][npm-url]
 [![npm download][download-image]][download-url]
+[![Node.js CI](https://github.com/node-modules/cluster-reload/actions/workflows/nodejs.yml/badge.svg)](https://github.com/node-modules/cluster-reload/actions/workflows/nodejs.yml)
 
 [npm-image]: https://img.shields.io/npm/v/cluster-reload.svg?style=flat-square
 [npm-url]: https://npmjs.org/package/cluster-reload
