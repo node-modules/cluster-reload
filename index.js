@@ -1,25 +1,11 @@
-/**
- * Copyright(c) node-modules and other contributors.
- * MIT Licensed
- *
- * Authors:
- *   fengmk2 <m@fengmk2.com> (http://fengmk2.com)
- */
-
-"use strict";
-
-/**
- * Module dependencies.
- */
-
-var cluster = require('cluster');
+const cluster = require('cluster');
 
 module.exports = reload;
 
 // Windows not support SIGQUIT https://nodejs.org/api/process.html#process_signal_events
-var KILL_SIGNAL = 'SIGTERM';
-var reloading = false;
-var reloadPedding = false;
+const KILL_SIGNAL = 'SIGTERM';
+let reloading = false;
+let reloadPedding = false;
 function reload(count) {
   if (reloading) {
     reloadPedding = true;
@@ -30,9 +16,9 @@ function reload(count) {
   }
   reloading = true;
   // find out all alive workers
-  var aliveWorkers = [];
-  var worker;
-  for (var id in cluster.workers) {
+  const aliveWorkers = [];
+  let worker;
+  for (const id in cluster.workers) {
     worker = cluster.workers[id];
     if (worker.state === 'disconnected') {
       continue;
@@ -40,8 +26,8 @@ function reload(count) {
     aliveWorkers.push(worker);
   }
 
-  var firstWorker;
-  var newWorker;
+  let firstWorker;
+  let newWorker;
 
   function reset() {
     // don't leak
@@ -51,7 +37,7 @@ function reload(count) {
     if (firstWorker) {
       // console.log('firstWorker %s %s', firstWorker.id, firstWorker.state);
       firstWorker.kill(KILL_SIGNAL);
-      setTimeout(function () {
+      setTimeout(function() {
         firstWorker.process.kill(KILL_SIGNAL);
       }, 100);
     }
@@ -68,15 +54,15 @@ function reload(count) {
   newWorker.on('listening', reset).on('exit', reset);
 
   // kill other workers
-  for (var i = 1; i < aliveWorkers.length; i++) {
+  for (let i = 1; i < aliveWorkers.length; i++) {
     worker = aliveWorkers[i];
     // console.log('worker %s %s', worker.id, worker.state);
     worker.kill(KILL_SIGNAL);
   }
 
   // keep workers number as before
-  var left = count - 1;
-  for (var j = 0; j < left; j++) {
+  const left = count - 1;
+  for (let j = 0; j < left; j++) {
     cluster.fork();
   }
 }
