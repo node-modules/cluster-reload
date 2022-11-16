@@ -21,6 +21,9 @@ var KILL_SIGNAL = 'SIGTERM';
 var reloading = false;
 var reloadPedding = false;
 function reload(count) {
+  if (cluster.isWorker) {
+    return;
+  }
   if (reloading) {
     reloadPedding = true;
     return;
