@@ -7,6 +7,7 @@
     "index.js"
   ],
   "scripts": {
+    "lint": "echo 'ignore'",
     "test": "egg-bin test",
     "ci": "egg-bin cov"
   },
@@ -28,10 +29,6 @@
   ],
   "engines": {
     "node": ">=8.0.0"
-  },
-  "ci": {
-    "version": "8, 10, 12, 14, 16, 18, 19",
-    "os": "linux"
   },
   "author": "fengmk2 <fengmk2@gmail.com> (https://github.com/fengmk2)",
   "license": "MIT"
