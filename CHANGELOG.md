@@ -1,3 +1,19 @@
+# Changelog
+
+## [2.0.0](https://github.com/node-modules/cluster-reload/compare/v1.1.0...v2.0.0) (2024-12-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop Node.js < 18.19.0 support
+
+part of https://github.com/eggjs/egg/issues/3644
+
+https://github.com/eggjs/egg/issues/5257
+
+### Features
+
+* support cjs and esm both by tshy ([#8](https://github.com/node-modules/cluster-reload/issues/8)) ([a2981f8](https://github.com/node-modules/cluster-reload/commit/a2981f867398ad842216a42f05975bd87cb636c8))
 
 1.1.0 / 2022-11-17
 ==================
