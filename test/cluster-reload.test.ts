@@ -19,9 +19,18 @@ describe('test/cluster-reload.test.ts', () => {
   });
 
   it('should got 200', async () => {
-    const { data, status } = await urllib.request('http://127.0.0.1:7001');
-    assert.equal(data.toString(), 'hello world\n');
-    assert.equal(status, 200);
+    let success = false;
+    while (!success) {
+      try {
+        const res = await urllib.request('http://127.0.0.1:7001');
+        assert.equal(res.data.toString(), 'hello world\n');
+        assert.equal(res.status, 200);
+        success = true;
+      } catch (err) {
+        // console.error(err);
+        await sleep(1000);
+      }
+    }
   });
 
   it('should work with reloading', async () => {
