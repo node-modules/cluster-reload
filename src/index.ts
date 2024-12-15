@@ -1,38 +1,38 @@
-const cluster = require('cluster');
-
-module.exports = reload;
+import cluster, { type Worker } from 'node:cluster';
+import { cpus } from 'node:os';
 
 // Windows not support SIGQUIT https://nodejs.org/api/process.html#process_signal_events
 const KILL_SIGNAL = 'SIGTERM';
 let reloading = false;
-let reloadPedding = false;
-function reload(count) {
+let reloadPadding = false;
+
+export function reload(count?: number) {
   if (reloading) {
-    reloadPedding = true;
+    reloadPadding = true;
     return;
   }
   if (!count) {
-    count = require('os').cpus().length;
+    count = cpus().length;
   }
   reloading = true;
   // find out all alive workers
   const aliveWorkers = [];
-  let worker;
   for (const id in cluster.workers) {
-    worker = cluster.workers[id];
-    if (worker.state === 'disconnected') {
+    const worker = cluster.workers[id]!;
+    const state = Reflect.get(worker, 'state');
+    if (state === 'disconnected') {
       continue;
     }
     aliveWorkers.push(worker);
   }
 
-  let firstWorker;
-  let newWorker;
+  let firstWorker: Worker;
+  let newWorker: Worker;
 
   function reset() {
     // don't leak
     newWorker.removeListener('listening', reset);
-    newWorker.removeListener('error', reset);
+    newWorker.removeListener('exit', reset);
 
     if (firstWorker) {
       // console.log('firstWorker %s %s', firstWorker.id, firstWorker.state);
@@ -42,9 +42,9 @@ function reload(count) {
       }, 100);
     }
     reloading = false;
-    if (reloadPedding) {
+    if (reloadPadding) {
       // has reload jobs, reload again
-      reloadPedding = false;
+      reloadPadding = false;
       reload(count);
     }
   }
@@ -54,8 +54,7 @@ function reload(count) {
   newWorker.on('listening', reset).on('exit', reset);
 
   // kill other workers
-  for (let i = 1; i < aliveWorkers.length; i++) {
-    worker = aliveWorkers[i];
+  for (const worker of aliveWorkers) {
     // console.log('worker %s %s', worker.id, worker.state);
     worker.kill(KILL_SIGNAL);
   }

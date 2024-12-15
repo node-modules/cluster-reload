@@ -12,5 +12,8 @@ results
 
 node_modules
 npm-debug.log
-coverage/
 .vscode
+.tshy*
+.eslintcache
+dist
+coverage

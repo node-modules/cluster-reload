@@ -1,9 +1,10 @@
-const path = require('path');
-const cluster = require('cluster');
-const numCPUs = require('os').cpus().length;
+/* eslint-disable @typescript-eslint/no-var-requires */
+const path = require('node:path');
+const cluster = require('node:cluster');
+const numCPUs = require('node:os').cpus().length;
 
 cluster.setupMaster({
-  exec: path.join(__dirname, 'worker.js'),
+  exec: path.join(__dirname, 'worker.cjs'),
 });
 
 // Fork workers.
